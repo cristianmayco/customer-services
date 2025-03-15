@@ -2,6 +2,7 @@ package main
 
 import (
 	"cristianmayco/customer-services/handlers"
+	"cristianmayco/customer-services/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -9,8 +10,11 @@ import (
 func main() {
 	r := gin.Default()
 
+	r.POST("/login", handlers.LoginHandler)
+
 	// Rotas para o Customer
 	customerGroup := r.Group("/customers")
+	customerGroup.Use(middleware.JWTMiddleware())
 	{
 		customerGroup.GET("/", handlers.GetAllCustomers)
 		customerGroup.GET("/:id", handlers.GetCustomerByID)
