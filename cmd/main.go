@@ -1,19 +1,24 @@
 package main
 
 import (
-	"fmt"
+	"cristianmayco/customer-services/handlers"
 
-	"github.com/cristianmayco/customer-service/models"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	r := gin.Default()
 
-	service := models.NewService(1, "Service 1", "Service 1 Description", "Active")
-	customer := models.NewCustomer(1, "Customer 1", "Customer 1 Identity", "Active")
-	customerService := models.NewCustomerService(1, 1, 1, "Active", "2021-01-01", "2021-01-01", "Token Service")
+	// Rotas para o Customer
+	customerGroup := r.Group("/customers")
+	{
+		customerGroup.GET("/", handlers.GetAllCustomers)
+		customerGroup.GET("/:id", handlers.GetCustomerByID)
+		customerGroup.POST("/", handlers.CreateCustomer)
+		customerGroup.PUT("/:id", handlers.UpdateCustomer)
+		customerGroup.DELETE("/:id", handlers.DeleteCustomer)
+	}
 
-	fmt.Println(service)
-	fmt.Println(customer)
-	fmt.Println(customerService)
-
+	// Inicia o servidor na porta 8080
+	r.Run(":8080")
 }
