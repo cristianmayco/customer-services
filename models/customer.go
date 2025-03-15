@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type Customer struct {
 	ID               int    `json:"id" validate:"required"`
@@ -12,12 +15,16 @@ type Customer struct {
 }
 
 func NewCustomer(id int, name, customerIdentity, status string) *Customer {
-	return &Customer{
+	currentTime := time.Now().Format("2006-01-02 15:04:05") // Formata a data e hora
+	customer := &Customer{
 		ID:               id,
 		Name:             name,
 		CustomerIdentity: customerIdentity,
 		Status:           status,
-		CreateAt:         time.Now().UTC().Format(time.RFC3339),
-		UpdateAt:         time.Now().UTC().Format(time.RFC3339),
+		CreateAt:         currentTime,
+		UpdateAt:         currentTime,
 	}
+	// Log para depuração
+	fmt.Printf("NewCustomer created: %+v\n", customer)
+	return customer
 }

@@ -4,6 +4,7 @@ import (
 	"cristianmayco/customer-services/models"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -42,7 +43,12 @@ func CreateCustomer(c *gin.Context) {
 		return
 	}
 
+	// Preenche os campos de data
+	currentTime := time.Now().Format("2006-01-02 15:04:05")
 	newCustomer.ID = len(customers) + 1
+	newCustomer.CreateAt = currentTime
+	newCustomer.UpdateAt = currentTime
+
 	customers = append(customers, newCustomer)
 	c.JSON(http.StatusCreated, newCustomer)
 }
