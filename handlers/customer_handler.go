@@ -9,11 +9,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Simula um banco de dados em memória
-var customers = []models.Customer{}
-
 // GET /customers - Retorna todos os clientes
 func GetAllCustomers(c *gin.Context) {
+	customers, err := models.GetAllCustomers()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch customers"})
+		return
+	}
 	c.JSON(http.StatusOK, customers)
 }
 
@@ -25,14 +27,13 @@ func GetCustomerByID(c *gin.Context) {
 		return
 	}
 
-	for _, customer := range customers {
-		if customer.ID == id {
-			c.JSON(http.StatusOK, customer)
-			return
-		}
+	customer, err := models.GetCustomerByID(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Customer not found"})
+		return
 	}
 
-	c.JSON(http.StatusNotFound, gin.H{"error": "Customer not found"})
+	c.JSON(http.StatusOK, customer)
 }
 
 // POST /customers - Cria um novo cliente
@@ -44,12 +45,15 @@ func CreateCustomer(c *gin.Context) {
 	}
 
 	// Preenche os campos de data
-	currentTime := time.Now().Format("2006-01-02 15:04:05")
-	newCustomer.ID = len(customers) + 1
+	currentTime := time.Now()
 	newCustomer.CreateAt = currentTime
 	newCustomer.UpdateAt = currentTime
 
-	customers = append(customers, newCustomer)
+	if err := newCustomer.Save(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save customer"})
+		return
+	}
+
 	c.JSON(http.StatusCreated, newCustomer)
 }
 
@@ -67,16 +71,15 @@ func UpdateCustomer(c *gin.Context) {
 		return
 	}
 
-	for i, customer := range customers {
-		if customer.ID == id {
-			customers[i] = updatedCustomer
-			customers[i].ID = id // Garante que o ID não seja alterado
-			c.JSON(http.StatusOK, customers[i])
-			return
-		}
+	updatedCustomer.ID = id
+	updatedCustomer.UpdateAt = time.Now()
+
+	if err := updatedCustomer.Update(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update customer"})
+		return
 	}
 
-	c.JSON(http.StatusNotFound, gin.H{"error": "Customer not found"})
+	c.JSON(http.StatusOK, updatedCustomer)
 }
 
 // DELETE /customers/:id - Remove um cliente pelo ID
@@ -87,13 +90,10 @@ func DeleteCustomer(c *gin.Context) {
 		return
 	}
 
-	for i, customer := range customers {
-		if customer.ID == id {
-			customers = append(customers[:i], customers[i+1:]...)
-			c.JSON(http.StatusOK, gin.H{"message": "Customer deleted"})
-			return
-		}
+	if err := models.DeleteCustomer(id); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete customer"})
+		return
 	}
 
-	c.JSON(http.StatusNotFound, gin.H{"error": "Customer not found"})
+	c.JSON(http.StatusOK, gin.H{"message": "Customer deleted"})
 }

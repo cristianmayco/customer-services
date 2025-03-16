@@ -2,12 +2,16 @@ package main
 
 import (
 	"cristianmayco/customer-services/handlers"
+	"cristianmayco/customer-services/infra"
 	"cristianmayco/customer-services/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	// Inicializa a conexão com o banco de dados
+	infra.Connect()
+
 	r := gin.Default()
 
 	r.POST("/login", handlers.LoginHandler)
